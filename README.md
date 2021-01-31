@@ -9,7 +9,7 @@ This is useful if you're dependent on local DNS and want to ensure relative High
 
 ### How to Run
 
-AdGuard Sync is packaged as a Docker image and can be ran anywhere with access to your instances. You can update the `docker-compose.yaml` file with your values based on the following:
+AdGuard Sync is packaged as a Docker image and can be ran anywhere with access to your instances, though it is advisable to run this on the same instance that is running your Primary Adguard instance. This makes your primary instance the "source of truth" for local DNS, but allows your secondary instance stay in sync as a fallback. Once running, set your router DNS to point to both your primary and secondary. You can update the `docker-compose.yaml` file with your values based on the following:
 
 | Variable | Required | Description | Default |
 |---|---|---|---|
@@ -26,8 +26,6 @@ Once you've updated the file and ensure you have `docker` and `docker-compose` i
 ```bash
 docker-compose up -d
 ```
-
-It's highly advisable to run this on the same instance that is running your Primary instance.
 
 You can check on the status of your newly running pod with:
 
