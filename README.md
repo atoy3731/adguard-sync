@@ -18,7 +18,7 @@ AdGuard Sync is packaged as a Docker image and can be ran anywhere with access t
 | ADGUARD_USER | Yes | Username to log into your AdGuard instances. | N/A |
 | ADGUARD_PASS | Yes | Password to log into your AdGuard instances. | N/A |
 | SECONDARY_ADGUARD_USER | No | Username to log into your secondary AdGuard instance. Only necessary if credentials are different between primary and secondary | Value of 'ADGUARD_USER' |
-| SECONDARY_ADGUARD_PASS | No | Password to log into your secondary AdGuard instance. Only necessary if credentials are different between primary and secondary | Value of 'ADGUARD_PASSWORD' |
+| SECONDARY_ADGUARD_PASS | No | Password to log into your secondary AdGuard instance. Only necessary if credentials are different between primary and secondary | Value of 'ADGUARD_PASS' |
 | REFRESH_INTERVAL_SECS | No | Frequency in seconds to refresh entries. | 60 |
 
 Once you've updated the file and ensure you have `docker` and `docker-compose` installed, run the following in the root directory:
