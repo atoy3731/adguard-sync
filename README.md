@@ -3,7 +3,7 @@
 ![Docker](https://github.com/atoy3731/adguard-sync/workflows/Docker/badge.svg)
 
 
-This project will sync entries between two Primary and Secondary AdGuard Home instances using the API.
+This project will sync entries between a Primary and Secondary AdGuard Home instance using the API.
 
 This is useful if you're dependent on local DNS and want to ensure relative High Availability.
 
