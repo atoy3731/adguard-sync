@@ -1,5 +1,7 @@
 FROM alpine:3.13
 
+ENV PYTHONUNBUFFERED=1
+
 RUN apk update && \
     apk add python3 curl && \
     curl --silent --show-error --retry 5 https://bootstrap.pypa.io/get-pip.py | python3 && \
