@@ -10,6 +10,6 @@ COPY requirements.txt /tmp/requirements.txt
 RUN pip3 install -r /tmp/requirements.txt && \
     rm -f /tmp/requirements.txt
 
-COPY app.py /opt/app.py
+COPY src/app.py /opt/app.py
 
 CMD [ '/usr/bin/python3', '/opt/app.py' ]

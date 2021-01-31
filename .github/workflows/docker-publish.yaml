@@ -18,7 +18,7 @@ jobs:
 
       # Build: Build the Docker image with a temporary tag.
       - name: Build image
-        run: docker build . --file Dockerfile --tag $IMAGE_NAME
+        run: docker build ./build --file Dockerfile --tag $IMAGE_NAME
 
       # Login: Log into Docker Hub using Github secrets.
       - name: Log into Docker
