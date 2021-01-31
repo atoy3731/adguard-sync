@@ -12,4 +12,6 @@ RUN pip3 install -r /tmp/requirements.txt && \
 
 COPY src/app.py /opt/app.py
 
-CMD [ '/usr/bin/python3', '/opt/app.py' ]
+ENTRYPOINT ["python3"]
+CMD ["/opt/app.py"]
+
