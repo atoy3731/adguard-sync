@@ -3,7 +3,7 @@ name: Docker
 on:
   push:
     branches:
-      - master
+      - main
 
 env:
   IMAGE_NAME: atoy3731/adguard-sync
