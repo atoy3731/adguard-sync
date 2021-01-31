@@ -27,6 +27,8 @@ Once you've updated the file and ensure you have `docker` and `docker-compose` i
 docker-compose up -d
 ```
 
+It's highly advisable to run this on the same instance that is running your Primary instance.
+
 You can check on the status of your newly running pod with:
 
 ```bash
