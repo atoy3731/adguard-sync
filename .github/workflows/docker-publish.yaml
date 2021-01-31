@@ -1,0 +1,35 @@
+name: Docker
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  IMAGE_NAME: atoy3731/adguard-sync
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Build: Build the Docker image with a temporary tag.
+      - name: Build image
+        run: docker build . --file Dockerfile --tag $IMAGE_NAME
+
+      # Login: Log into Docker Hub using Github secrets.
+      - name: Log into Docker
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: echo "$DOCKER_PASSWORD" | docker login -u $DOCKER_USER --password-stdin
+
+      # Push: Retag the Docker image and push it to Docker Hub.
+      - name: Push image to DockerHub
+        run: |
+          VERSION=$(cat VERSION)
+          docker tag $IMAGE_NAME $IMAGE_NAME:$VERSION
+          docker push $IMAGE_NAME:$VERSION

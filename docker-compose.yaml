@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  adguard-sync:
+    image: atoy3731/adguard-sync:1.0
+    container_name: adguard-sync
+
+    restart: always
+    environment:
+      # Required variables
+      - ADGUARD_PRIMARY=http://dns01.example.com
+      - ADGUARD_SECONDARY=http://dns02.example.com
+      - ADGUARD_USER=admin
+      - ADGUARD_PASS=password
+
+      # Optional variables
+      # - SECONDARY_ADGUARD_USER=other_admin
+      # - SECONDARY_ADGUARD_PASS=other_password
+      # - REFRESH_INTERVAL_SECS=30
