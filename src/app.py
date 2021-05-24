@@ -43,7 +43,7 @@ def get_entries(url, cookie):
     Retrieves all existing entries from AdGuard.
     :param url: Base AdGuard URL
     :param cookie: Session token
-    :return: Dict of Entries
+    :return: List of Entries
     """
     cookies = {
         'agh_session': cookie
@@ -54,12 +54,8 @@ def get_entries(url, cookie):
         raise UnauthenticatedError
 
     entry_array = json.loads(response.text)
-    entry_dict = {}
 
-    for e in entry_array:
-        entry_dict[e['domain']] = e['answer']
-
-    return entry_dict
+    return entry_array
 
 
 def update_entries(url, cookie, sync_entries):
@@ -100,26 +96,6 @@ def update_entries(url, cookie, sync_entries):
             if response.status_code == 403:
                 raise UnauthenticatedError
 
-        elif entry['action'] == 'UPDATE':
-            print("  - Updating entry ({} => {})".format(entry['domain'], entry['new_answer']))
-
-            old_data = {
-                'domain': entry['domain'],
-                'answer': entry['old_answer']
-            }
-
-            new_data = {
-                'domain': entry['domain'],
-                'answer': entry['new_answer']
-            }
-            response = requests.post('{}/control/rewrite/delete'.format(url), cookies=cookies, data=json.dumps(old_data))
-            if response.status_code == 403:
-                raise UnauthenticatedError
-
-            response = requests.post('{}/control/rewrite/delete'.format(url), cookies=cookies, data=json.dumps(new_data))
-            if response.status_code == 403:
-                raise UnauthenticatedError
-
 
 if __name__ == '__main__':
     print("Running Adguard Sync for '{}' => '{}'..".format(ADGUARD_PRIMARY, ADGUARD_SECONDARY))
@@ -135,28 +111,20 @@ if __name__ == '__main__':
 
             sync_entries = []
 
-            for pk, pv in primary_entries.items():
-                if pk not in secondary_entries:
+            for e in primary_entries:
+                if e not in secondary_entries:
                     sync_entries.append({
                         'action': 'ADD',
-                        'domain': pk,
-                        'answer': pv
+                        'domain': e['domain'],
+                        'answer': e['answer']
                     })
 
-                elif secondary_entries[pk] != pv:
-                    sync_entries.append({
-                        'action': 'UPDATE',
-                        'domain': pk,
-                        'old_answer': secondary_entries[pk],
-                        'new_answer': pv
-                    })
-
-            for sk, sv in secondary_entries.items():
-                if sk not in primary_entries:
+            for s in secondary_entries:
+                if s not in primary_entries:
                     sync_entries.append({
                         'action': 'DEL',
-                        'domain': sk,
-                        'answer': sv
+                        'domain': s['domain'],
+                        'answer': s['answer']
                     })
 
             update_entries(ADGUARD_SECONDARY, secondary_cookie, sync_entries)
