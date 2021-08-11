@@ -35,6 +35,12 @@ def get_login_cookie(url, user, passwd):
     }
 
     response = requests.post('{}/control/login'.format(url), data=json.dumps(creds))
+
+    if response.status_code != 200:
+        print('ERROR: Unable to acquire cookie.')
+        print('Message: {}'.format(response.text))
+        return None
+
     return response.cookies['agh_session']
 
 
@@ -128,6 +134,9 @@ if __name__ == '__main__':
     primary_cookie = get_login_cookie(ADGUARD_PRIMARY, ADGUARD_USER, ADGUARD_PASS)
     secondary_cookie = get_login_cookie(ADGUARD_SECONDARY, SECONDARY_ADGUARD_USER, SECONDARY_ADGUARD_PASS)
 
+    if primary_cookie is None or secondary_cookie is None:
+        exit(1)
+
     while True:
         try:
             primary_entries = get_entries(ADGUARD_PRIMARY, primary_cookie)
@@ -164,5 +173,8 @@ if __name__ == '__main__':
         except UnauthenticatedError:
             primary_cookie = get_login_cookie(ADGUARD_PRIMARY, ADGUARD_USER, ADGUARD_PASS)
             secondary_cookie = get_login_cookie(ADGUARD_SECONDARY, SECONDARY_ADGUARD_USER, SECONDARY_ADGUARD_PASS)
+
+            if primary_cookie is None or secondary_cookie is None:
+                exit(1)
 
         time.sleep(REFRESH_INTERVAL_SECS)
