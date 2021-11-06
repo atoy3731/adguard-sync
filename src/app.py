@@ -24,7 +24,7 @@ SYNC_BLOCKED_SERVICES = os.environ.get('SYNC_BLOCKED_SERVICES', 'true').lower() 
 SYNC_BLOCK_WHITE_LISTS = os.environ.get('SYNC_BLOCK_WHITE_LISTS', 'true').lower() == 'true'
 SYNC_CUSTOM_RULES = os.environ.get('SYNC_CUSTOM_RULES', 'true').lower() == 'true'
 
-REFRESH_INTERVAL_SECS = int(os.environ.get('REFRESH_INTERVAL_SECS', '10'))
+REFRESH_INTERVAL_SECS = int(os.environ.get('REFRESH_INTERVAL_SECS', '60'))
 
 
 def get_login_cookie(url, user, passwd):
