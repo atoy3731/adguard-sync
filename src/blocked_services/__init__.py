@@ -62,4 +62,8 @@ def reconcile(adguard_primary, adguard_secondary, primary_cookie, secondary_cook
             _update_blocked_services(adguard_secondary, secondary_cookie, primary_blocked_services)
             break
 
+    for bs in secondary_blocked_services:
+        if bs not in primary_blocked_services:
+            _update_blocked_services(adguard_secondary, secondary_cookie, primary_blocked_services)
+            break
     
