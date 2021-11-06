@@ -20,6 +20,10 @@ AdGuard Sync is packaged as a Docker image and can be ran anywhere with access t
 | SECONDARY_ADGUARD_USER | No | Username to log into your secondary AdGuard instance. Only necessary if credentials are different between primary and secondary | Value of 'ADGUARD_USER' |
 | SECONDARY_ADGUARD_PASS | No | Password to log into your secondary AdGuard instance. Only necessary if credentials are different between primary and secondary | Value of 'ADGUARD_PASS' |
 | REFRESH_INTERVAL_SECS | No | Frequency in seconds to refresh entries. | 60 |
+| SYNC_ENTRIES | No | If 'true', will sync rewrite entries. | true |
+| SYNC_BLOCKED_SERVICES | No | If 'true', will sync blocked services. | true |
+| SYNC_BLOCK_ALLOW_LISTS | No | If 'true', will sync block/allow lists. | true |
+| SYNC_CUSTOM_RULES | No | If 'true', will sync custom rules. | true |
 
 Once you've updated the file and ensure you have `docker` and `docker-compose` installed, run the following in the root directory:
 

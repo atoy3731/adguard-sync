@@ -2,6 +2,11 @@ import requests
 import os
 import json
 import time
+import entries
+import blocked_services
+import block_allow_lists
+import custom_rules
+from exceptions import UnauthenticatedError
 
 ADGUARD_PRIMARY = os.environ['ADGUARD_PRIMARY']
 ADGUARD_SECONDARY = os.environ['ADGUARD_SECONDARY']
@@ -13,11 +18,13 @@ ADGUARD_PASS = os.environ['ADGUARD_PASS']
 SECONDARY_ADGUARD_USER = os.environ.get('SECONDARY_ADGUARD_USER', ADGUARD_USER)
 SECONDARY_ADGUARD_PASS = os.environ.get('SECONDARY_ADGUARD_PASS', ADGUARD_PASS)
 
+# By default, sync all
+SYNC_ENTRIES = os.environ.get('SYNC_ENTRIES', 'true').lower() == 'true'
+SYNC_BLOCKED_SERVICES = os.environ.get('SYNC_BLOCKED_SERVICES', 'true').lower() == 'true'
+SYNC_BLOCK_ALLOW_LISTS = os.environ.get('SYNC_BLOCK_ALLOW_LISTS', 'true').lower() == 'true'
+SYNC_CUSTOM_RULES = os.environ.get('SYNC_CUSTOM_RULES', 'true').lower() == 'true'
+
 REFRESH_INTERVAL_SECS = int(os.environ.get('REFRESH_INTERVAL_SECS', '60'))
-
-
-class UnauthenticatedError(Exception):
-    pass
 
 
 def get_login_cookie(url, user, passwd):
@@ -44,65 +51,6 @@ def get_login_cookie(url, user, passwd):
     return response.cookies['agh_session']
 
 
-def get_entries(url, cookie):
-    """
-    Retrieves all existing entries from AdGuard.
-    :param url: Base AdGuard URL
-    :param cookie: Session token
-    :return: List of Entries
-    """
-    cookies = {
-        'agh_session': cookie
-    }
-    response = requests.get('{}/control/rewrite/list'.format(url), cookies=cookies)
-
-    if response.status_code == 403:
-        raise UnauthenticatedError
-
-    entry_array = json.loads(response.text)
-
-    return entry_array
-
-
-def update_entries(url, cookie, sync_entries):
-    """
-    Update entries from your primary to secondary AdGuard.
-
-    ADD: Will add the entry with the domain pointing to IP.
-    UPDATE: Will update existing entry to point the domain to the new IP.
-    DEL: Will delete the existing entry from secondary AdGuard.
-    :param url: URL of the Secondary AdGuard
-    :param cookie: Secondary AdGuard Auth Cookie.
-    :param sync_entries: Array of entries to be sync.
-    :return: None
-    """
-
-    cookies = {
-        'agh_session': cookie
-    }
-
-    for entry in sync_entries:
-        if entry['action'] == 'ADD':
-            print("  - Adding entry ({} => {})".format(entry['domain'], entry['answer']))
-            data = {
-                'domain': entry['domain'],
-                'answer': entry['answer']
-            }
-            response = requests.post('{}/control/rewrite/add'.format(url), cookies=cookies, data=json.dumps(data))
-            if response.status_code == 403:
-                raise UnauthenticatedError
-
-        elif entry['action'] == 'DEL':
-            print("  - Deleting entry ({} => {})".format(entry['domain'], entry['answer']))
-            data = {
-                'domain': entry['domain'],
-                'answer': entry['answer']
-            }
-            response = requests.post('{}/control/rewrite/delete'.format(url), cookies=cookies, data=json.dumps(data))
-            if response.status_code == 403:
-                raise UnauthenticatedError
-
-
 if __name__ == '__main__':
     print("Running Adguard Sync for '{}' => '{}'..".format(ADGUARD_PRIMARY, ADGUARD_SECONDARY))
 
@@ -115,28 +63,21 @@ if __name__ == '__main__':
 
     while True:
         try:
-            primary_entries = get_entries(ADGUARD_PRIMARY, primary_cookie)
-            secondary_entries = get_entries(ADGUARD_SECONDARY, secondary_cookie)
+            # Reconcile entries
+            if SYNC_ENTRIES:
+                entries.reconcile(ADGUARD_PRIMARY, ADGUARD_SECONDARY, primary_cookie, secondary_cookie)
 
-            sync_entries = []
+            # Reconcile blocked services
+            if SYNC_BLOCKED_SERVICES:
+                blocked_services.reconcile(ADGUARD_PRIMARY, ADGUARD_SECONDARY, primary_cookie, secondary_cookie)
 
-            for e in primary_entries:
-                if e not in secondary_entries:
-                    sync_entries.append({
-                        'action': 'ADD',
-                        'domain': e['domain'],
-                        'answer': e['answer']
-                    })
+            # Reconcile block/allow lists
+            if SYNC_BLOCK_ALLOW_LISTS:
+                block_allow_lists.reconcile(ADGUARD_PRIMARY, ADGUARD_SECONDARY, primary_cookie, secondary_cookie)
 
-            for s in secondary_entries:
-                if s not in primary_entries:
-                    sync_entries.append({
-                        'action': 'DEL',
-                        'domain': s['domain'],
-                        'answer': s['answer']
-                    })
-
-            update_entries(ADGUARD_SECONDARY, secondary_cookie, sync_entries)
+            # Reconcile custom rules
+            if SYNC_CUSTOM_RULES:
+                custom_rules.reconcile(ADGUARD_PRIMARY, ADGUARD_SECONDARY, primary_cookie, secondary_cookie)
 
         except UnauthenticatedError:
             primary_cookie = get_login_cookie(ADGUARD_PRIMARY, ADGUARD_USER, ADGUARD_PASS)
