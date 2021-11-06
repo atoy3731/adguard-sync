@@ -6,3 +6,7 @@ venv/
 .vscode/
 .env
 __pycache__
+
+.DS_Store
+.AppleDouble
+.LSOverride
