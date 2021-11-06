@@ -4,7 +4,7 @@ import json
 import time
 import entries
 import blocked_services
-import block_white_lists
+import block_allow_lists
 import custom_rules
 from exceptions import UnauthenticatedError
 
@@ -21,7 +21,7 @@ SECONDARY_ADGUARD_PASS = os.environ.get('SECONDARY_ADGUARD_PASS', ADGUARD_PASS)
 # By default, sync all
 SYNC_ENTRIES = os.environ.get('SYNC_ENTRIES', 'true').lower() == 'true'
 SYNC_BLOCKED_SERVICES = os.environ.get('SYNC_BLOCKED_SERVICES', 'true').lower() == 'true'
-SYNC_BLOCK_WHITE_LISTS = os.environ.get('SYNC_BLOCK_WHITE_LISTS', 'true').lower() == 'true'
+SYNC_BLOCK_ALLOW_LISTS = os.environ.get('SYNC_BLOCK_ALLOW_LISTS', 'true').lower() == 'true'
 SYNC_CUSTOM_RULES = os.environ.get('SYNC_CUSTOM_RULES', 'true').lower() == 'true'
 
 REFRESH_INTERVAL_SECS = int(os.environ.get('REFRESH_INTERVAL_SECS', '60'))
@@ -71,9 +71,9 @@ if __name__ == '__main__':
             if SYNC_BLOCKED_SERVICES:
                 blocked_services.reconcile(ADGUARD_PRIMARY, ADGUARD_SECONDARY, primary_cookie, secondary_cookie)
 
-            # Reconcile block/white lists
-            if SYNC_BLOCK_WHITE_LISTS:
-                block_white_lists.reconcile(ADGUARD_PRIMARY, ADGUARD_SECONDARY, primary_cookie, secondary_cookie)
+            # Reconcile block/allow lists
+            if SYNC_BLOCK_ALLOW_LISTS:
+                block_allow_lists.reconcile(ADGUARD_PRIMARY, ADGUARD_SECONDARY, primary_cookie, secondary_cookie)
 
             # Reconcile custom rules
             if SYNC_CUSTOM_RULES:

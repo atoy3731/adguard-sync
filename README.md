@@ -22,7 +22,7 @@ AdGuard Sync is packaged as a Docker image and can be ran anywhere with access t
 | REFRESH_INTERVAL_SECS | No | Frequency in seconds to refresh entries. | 60 |
 | SYNC_ENTRIES | No | If 'true', will sync rewrite entries. | true |
 | SYNC_BLOCKED_SERVICES | No | If 'true', will sync blocked services. | true |
-| SYNC_BLOCK_WHITE_LISTS | No | If 'true', will sync block/white lists. | true |
+| SYNC_BLOCK_ALLOW_LISTS | No | If 'true', will sync block/allow lists. | true |
 | SYNC_CUSTOM_RULES | No | If 'true', will sync custom rules. | true |
 
 Once you've updated the file and ensure you have `docker` and `docker-compose` installed, run the following in the root directory:
