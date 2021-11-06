@@ -38,7 +38,7 @@ def _get_block_allow_lists(url, cookie):
                 'enabled': blocklist['enabled']
             }
 
-    allowlist_array = resp_obj['allowlist_filters']
+    allowlist_array = resp_obj['whitelist_filters']
 
     if allowlist_array is not None:
         for allowlist in allowlist_array:
