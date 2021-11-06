@@ -12,8 +12,10 @@ COPY requirements.txt /tmp/requirements.txt
 RUN pip3 install -r /tmp/requirements.txt && \
     rm -f /tmp/requirements.txt
 
-COPY src/app.py /opt/app.py
+COPY src /opt/app
+
+WORKDIR /opt/app
 
 ENTRYPOINT ["python3"]
-CMD ["/opt/app.py"]
+CMD ["app.py"]
 

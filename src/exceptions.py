@@ -1,0 +1,2 @@
+class UnauthenticatedError(Exception):
+    pass

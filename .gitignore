@@ -2,3 +2,7 @@ venv/
 *.pyc
 .idea/
 *.iml
+.venv/
+.vscode/
+.env
+__pycache__
