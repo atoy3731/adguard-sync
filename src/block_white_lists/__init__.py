@@ -124,6 +124,8 @@ def _update_block_white_lists(url, cookie, sync_block_white_lists):
             },
             'whitelist': mod['whitelist']
         }
+
+        print("  - Updating modified entry ({})".format(mod['url']))
         response = requests.post('{}/control/filtering/set_url'.format(url), cookies=cookies, data=json.dumps(data))
         
         if response.status_code == 403:
