@@ -1,6 +1,7 @@
 import requests
 from exceptions import UnauthenticatedError, SystemError
 import common
+import json
 
 
 def _get_general_settings(filtering_status, url, cookie):
@@ -12,6 +13,10 @@ def _get_general_settings(filtering_status, url, cookie):
     """
 
     settings = {}
+
+    # Retrieve overarching protection setting
+    response = common.get_response('{}/control/status'.format(url), cookie)
+    settings['protection_enabled'] = response['protection_enabled']
 
     # Retrieve safebrowsing setting
     response = common.get_response('{}/control/safebrowsing/status'.format(url), cookie)
@@ -66,6 +71,33 @@ def _update_enable_setting(setting, enabled, url, cookie):
     elif response.status_code != 200:
         raise SystemError
 
+def _update_protection_enabled(enabled, url, cookie):
+    """
+    Update enable/disable of overarching protection in secondary AdGuard.
+    :param enabled: Bool if the setting should be enabled/disabled
+    :param url: URL of the Secondary AdGuard
+    :param cookie: Secondary AdGuard Auth Cookie.
+    :return: None
+    """
+    cookies = {
+        'agh_session': cookie
+    }
+
+    data = {
+        'protection_enabled': enabled
+    }
+    
+    if enabled:
+        print("  - Enabling global protection")
+    else:
+        print("  - Disabling global protection")
+    
+    response = requests.post('{}/control/dns_config'.format(url), data=json.dumps(data), cookies=cookies)
+
+    if response.status_code == 403:
+        raise UnauthenticatedError
+    elif response.status_code != 200:
+        raise SystemError
 
 def reconcile(primary_filtering_status, secondary_filtering_status, adguard_primary, primary_cookie, adguard_secondary, secondary_cookie):
     """
@@ -77,6 +109,10 @@ def reconcile(primary_filtering_status, secondary_filtering_status, adguard_prim
     """
     primary_general_settings = _get_general_settings(primary_filtering_status, adguard_primary, primary_cookie)
     secondary_general_settings = _get_general_settings(secondary_filtering_status, adguard_secondary, secondary_cookie)
+
+    # Overarching protection
+    if primary_general_settings['protection_enabled'] != secondary_general_settings['protection_enabled']:
+        _update_protection_enabled(primary_general_settings['protection_enabled'], adguard_secondary, secondary_cookie)
 
     # Safesearch Update
     if primary_general_settings['safesearch'] != secondary_general_settings['safesearch']:
