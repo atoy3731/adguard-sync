@@ -13,8 +13,8 @@ AdGuard Sync is packaged as a Docker image and can be ran anywhere with access t
 
 | Variable | Required | Description | Default |
 |---|---|---|---|
-| ADGUARD_PRIMARY | Yes | Primary base URL for the primary AdGuard instance (ie. http://dns01.example.com) | N/A |
-| ADGUARD_SECONDARY | Yes | Secondary base URL for the primary AdGuard instance (ie. http://dns02.example.com) | N/A |
+| ADGUARD_PRIMARY | Yes | Primary base URL for the primary AdGuard instance. It is highly advisable to use IP over hostnames to avoid DNS issues. (ie. http://192.168.1.2) | N/A |
+| ADGUARD_SECONDARY | Yes | Secondary base URL for the primary AdGuard instance It is highly advisable to use IP over hostnames to avoid DNS issues. (ie. http://192.168.1.3) | N/A |
 | ADGUARD_USER | Yes | Username to log into your AdGuard instances. | N/A |
 | ADGUARD_PASS | Yes | Password to log into your AdGuard instances. | N/A |
 | SECONDARY_ADGUARD_USER | No | Username to log into your secondary AdGuard instance. Only necessary if credentials are different between primary and secondary | Value of 'ADGUARD_USER' |
