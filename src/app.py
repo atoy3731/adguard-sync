@@ -6,7 +6,10 @@ import entries
 import blocked_services
 import block_allow_lists
 import custom_rules
-from exceptions import UnauthenticatedError
+import filtering
+from exceptions import UnauthenticatedError, SystemError
+from settings import general, dns, encryption
+import common
 
 ADGUARD_PRIMARY = os.environ['ADGUARD_PRIMARY']
 ADGUARD_SECONDARY = os.environ['ADGUARD_SECONDARY']
@@ -23,6 +26,9 @@ SYNC_ENTRIES = os.environ.get('SYNC_ENTRIES', 'true').lower() == 'true'
 SYNC_BLOCKED_SERVICES = os.environ.get('SYNC_BLOCKED_SERVICES', 'true').lower() == 'true'
 SYNC_BLOCK_ALLOW_LISTS = os.environ.get('SYNC_BLOCK_ALLOW_LISTS', 'true').lower() == 'true'
 SYNC_CUSTOM_RULES = os.environ.get('SYNC_CUSTOM_RULES', 'true').lower() == 'true'
+SYNC_GENERAL_SETTINGS = os.environ.get('SYNC_GENERAL_SETTINGS', 'true').lower() == 'true'
+SYNC_DNS_SETTINGS = os.environ.get('SYNC_DNS_SETTINGS', 'true').lower() == 'true'
+SYNC_ENCRYPTION_SETTINGS = os.environ.get('SYNC_ENCRYPTION_SETTINGS', 'false').lower() == 'true'
 
 REFRESH_INTERVAL_SECS = int(os.environ.get('REFRESH_INTERVAL_SECS', '60'))
 
@@ -63,6 +69,10 @@ if __name__ == '__main__':
 
     while True:
         try:
+            # Since a bunch of things use filtering status, only retrieve it once per loop to reduce API calls
+            primary_filtering_status = common.get_response('{}/control/filtering/status'.format(ADGUARD_PRIMARY), primary_cookie)
+            secondary_filtering_status = common.get_response('{}/control/filtering/status'.format(ADGUARD_SECONDARY), secondary_cookie)
+
             # Reconcile entries
             if SYNC_ENTRIES:
                 entries.reconcile(ADGUARD_PRIMARY, ADGUARD_SECONDARY, primary_cookie, secondary_cookie)
@@ -73,11 +83,23 @@ if __name__ == '__main__':
 
             # Reconcile block/allow lists
             if SYNC_BLOCK_ALLOW_LISTS:
-                block_allow_lists.reconcile(ADGUARD_PRIMARY, ADGUARD_SECONDARY, primary_cookie, secondary_cookie)
+                block_allow_lists.reconcile(primary_filtering_status, secondary_filtering_status, ADGUARD_SECONDARY, secondary_cookie)
 
             # Reconcile custom rules
             if SYNC_CUSTOM_RULES:
-                custom_rules.reconcile(ADGUARD_PRIMARY, ADGUARD_SECONDARY, primary_cookie, secondary_cookie)
+                custom_rules.reconcile(primary_filtering_status, secondary_filtering_status, ADGUARD_SECONDARY, secondary_cookie)
+
+            # Reconcile general settings
+            if SYNC_GENERAL_SETTINGS:
+                general.reconcile(primary_filtering_status, secondary_filtering_status, ADGUARD_PRIMARY, primary_cookie, ADGUARD_SECONDARY, secondary_cookie)
+
+            # Reconcile DNS settings
+            if SYNC_DNS_SETTINGS:
+                dns.reconcile(ADGUARD_PRIMARY, primary_cookie, ADGUARD_SECONDARY, secondary_cookie)
+
+            # Reconcile encrypting settings
+            if SYNC_ENCRYPTION_SETTINGS:
+                encryption.reconcile(ADGUARD_PRIMARY, primary_cookie, ADGUARD_SECONDARY, secondary_cookie)
 
         except UnauthenticatedError:
             primary_cookie = get_login_cookie(ADGUARD_PRIMARY, ADGUARD_USER, ADGUARD_PASS)
@@ -85,5 +107,8 @@ if __name__ == '__main__':
 
             if primary_cookie is None or secondary_cookie is None:
                 exit(1)
+
+        except SystemError:
+            print('ERROR: Not able to reach AdGuard. Is it running?')
 
         time.sleep(REFRESH_INTERVAL_SECS)

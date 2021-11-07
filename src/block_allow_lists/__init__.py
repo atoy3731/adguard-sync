@@ -1,33 +1,21 @@
 import requests
-import os
 import json
-import time
-from exceptions import UnauthenticatedError
+from exceptions import UnauthenticatedError, SystemError
 
 
-def _get_block_allow_lists(url, cookie):
+def _get_block_allow_lists(filtering_status):
     """
     Retrieves all existing blocklists from AdGuard.
     :param url: Base AdGuard URL
     :param cookie: Session token
     :return: List of Entries
     """
-    cookies = {
-        'agh_session': cookie
-    }
-
     formatted_block_allow_lists = {
         'blocklists': {},
         'allowlists': {}
     }
 
-    response = requests.get('{}/control/filtering/status'.format(url), cookies=cookies)
-
-    if response.status_code == 403:
-        raise UnauthenticatedError
-
-    resp_obj = json.loads(response.text)
-    blocklist_array = resp_obj['filters']
+    blocklist_array = filtering_status['filters']
 
     if blocklist_array is not None:
         for blocklist in blocklist_array:
@@ -38,7 +26,7 @@ def _get_block_allow_lists(url, cookie):
                 'enabled': blocklist['enabled']
             }
 
-    allowlist_array = resp_obj['whitelist_filters']
+    allowlist_array = filtering_status['whitelist_filters']
 
     if allowlist_array is not None:
         for allowlist in allowlist_array:
@@ -76,6 +64,8 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
         
         if response.status_code == 403:
             raise UnauthenticatedError
+        elif response.status_code != 200:
+            raise SystemError
 
     for del_blocklist in sync_block_allow_lists['blocklists']['del']:
         print("  - Deleting blocklist entry ({})".format(del_blocklist['url']))
@@ -87,6 +77,8 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
         
         if response.status_code == 403:
             raise UnauthenticatedError
+        elif response.status_code != 200:
+            raise SystemError
 
     # Perform adds second
     for add_allowlist in sync_block_allow_lists['allowlists']['add']:
@@ -100,6 +92,8 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
         
         if response.status_code == 403:
             raise UnauthenticatedError
+        elif response.status_code != 200:
+            raise SystemError
 
     for add_blocklist in sync_block_allow_lists['blocklists']['add']:
         print("  - Adding blocklist entry ({})".format(add_blocklist['url']))
@@ -112,6 +106,8 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
         
         if response.status_code == 403:
             raise UnauthenticatedError
+        elif response.status_code != 200:
+            raise SystemError
     
     # Modify any existing out of sync entry
     for mod in sync_block_allow_lists['mods']:
@@ -130,9 +126,11 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
         
         if response.status_code == 403:
             raise UnauthenticatedError
+        elif response.status_code != 200:
+            raise SystemError
 
 
-def reconcile(adguard_primary, adguard_secondary, primary_cookie, secondary_cookie):
+def reconcile(primary_filtering_status, secondary_filtering_status, adguard_secondary, secondary_cookie):
     """
     Reconcile blocklists from primary to secondary Adguards.
     Uses the URL as the unique identifier between instances.
@@ -141,8 +139,8 @@ def reconcile(adguard_primary, adguard_secondary, primary_cookie, secondary_cook
     :param primary_cookie: Auth cookie for primary Adguard.
     :param secondary_cookie: Auth cookie for secondary Adguard.
     """
-    primary_block_allow_lists = _get_block_allow_lists(adguard_primary, primary_cookie)
-    secondary_block_allow_lists = _get_block_allow_lists(adguard_secondary, secondary_cookie)
+    primary_block_allow_lists = _get_block_allow_lists(primary_filtering_status)
+    secondary_block_allow_lists = _get_block_allow_lists(secondary_filtering_status)
 
     sync_block_allow_lists = {
         'blocklists': {

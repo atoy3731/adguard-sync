@@ -1,8 +1,7 @@
 import requests
-import os
 import json
-import time
-from exceptions import UnauthenticatedError
+import common
+from exceptions import UnauthenticatedError, SystemError
 
 
 def _get_blocked_services(url, cookie):
@@ -12,18 +11,8 @@ def _get_blocked_services(url, cookie):
     :param cookie: Session token
     :return: List of Entries
     """
-    cookies = {
-        'agh_session': cookie
-    }
 
-    response = requests.get('{}/control/blocked_services/list'.format(url), cookies=cookies)
-
-    if response.status_code == 403:
-        raise UnauthenticatedError
-
-    blocked_service_array = json.loads(response.text)
-
-    return blocked_service_array
+    return common.get_response('{}/control/blocked_services/list'.format(url), cookie)
 
 
 def _update_blocked_services(url, cookie, sync_blocked_services):
@@ -44,6 +33,8 @@ def _update_blocked_services(url, cookie, sync_blocked_services):
     
     if response.status_code == 403:
         raise UnauthenticatedError
+    elif response.status_code != 200:
+        raise SystemError
 
 
 def reconcile(adguard_primary, adguard_secondary, primary_cookie, secondary_cookie):
