@@ -70,7 +70,7 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
         print("  - Deleting allowlist entry ({})".format(del_allowlist['url']))
         data = {
             'url': del_allowlist['url'],
-            'allowlist': True
+            'whitelist': True
         }
         response = requests.post('{}/control/filtering/remove_url'.format(url), cookies=cookies, data=json.dumps(data))
         
@@ -81,7 +81,7 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
         print("  - Deleting blocklist entry ({})".format(del_blocklist['url']))
         data = {
             'url': del_blocklist['url'],
-            'allowlist': False
+            'whitelist': False
         }
         response = requests.post('{}/control/filtering/remove_url'.format(url), cookies=cookies, data=json.dumps(data))
         
@@ -94,7 +94,7 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
         data = {
             'name': add_allowlist['name'],
             'url': add_allowlist['url'],
-            'allowlist': True
+            'whitelist': True
         }
         response = requests.post('{}/control/filtering/add_url'.format(url), cookies=cookies, data=json.dumps(data))
         
@@ -106,7 +106,7 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
         data = {
             'name': add_blocklist['name'],
             'url': add_blocklist['url'],
-            'allowlist': False
+            'whitelist': False
         }
         response = requests.post('{}/control/filtering/add_url'.format(url), cookies=cookies, data=json.dumps(data))
         
@@ -122,7 +122,7 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
                 'url': mod['url'],
                 'enabled': mod['enabled']
             },
-            'allowlist': mod['allowlist']
+            'whitelist': mod['allowlist']
         }
 
         print("  - Updating modified entry ({})".format(mod['url']))
