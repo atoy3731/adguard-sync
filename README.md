@@ -24,6 +24,9 @@ AdGuard Sync is packaged as a Docker image and can be ran anywhere with access t
 | SYNC_BLOCKED_SERVICES | No | If 'true', will sync blocked services. | true |
 | SYNC_BLOCK_ALLOW_LISTS | No | If 'true', will sync block/allow lists. | true |
 | SYNC_CUSTOM_RULES | No | If 'true', will sync custom rules. | true |
+| SYNC_GENERAL_SETTINGS | No | If 'true', will sync general settings. | true |
+| SYNC_DNS_SETTINGS | No | If 'true', will sync DNS settings. | true |
+| SYNC_ENCRYPTION_SETTINGS | No | If 'true', will sync encrypt settings. | false |
 
 Once you've updated the file and ensure you have `docker` and `docker-compose` installed, run the following in the root directory:
 
@@ -38,3 +41,7 @@ docker-compose logs
 ```
 
 **NOTE:** The container is set to automatically restart when the docker daemon restarts.
+
+### Encryption Syncing with Certifications/Keys
+
+If you plan to sync encryption settings across environments and you're using paths for certificates/keys, you *must make sure the files exist in both primary and secondary AdGuard instances*! Given this, `SYNC_ENCRYPTION_SETTINGS` is defaulted to `false` as a safety measure.

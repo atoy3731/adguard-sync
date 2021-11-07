@@ -1,8 +1,7 @@
 import requests
-import os
 import json
-import time
-from exceptions import UnauthenticatedError
+import common
+from exceptions import UnauthenticatedError, SystemError
 
 
 def _get_entries(url, cookie):
@@ -12,17 +11,9 @@ def _get_entries(url, cookie):
     :param cookie: Session token
     :return: List of Entries
     """
-    cookies = {
-        'agh_session': cookie
-    }
-    response = requests.get('{}/control/rewrite/list'.format(url), cookies=cookies)
 
-    if response.status_code == 403:
-        raise UnauthenticatedError
+    return common.get_response('{}/control/rewrite/list'.format(url), cookie)
 
-    entry_array = json.loads(response.text)
-
-    return entry_array
 
 def _update_entries(url, cookie, sync_entries):
     """
@@ -51,6 +42,8 @@ def _update_entries(url, cookie, sync_entries):
             response = requests.post('{}/control/rewrite/add'.format(url), cookies=cookies, data=json.dumps(data))
             if response.status_code == 403:
                 raise UnauthenticatedError
+            elif response.status_code != 200:
+                raise SystemError
 
         elif entry['action'] == 'DEL':
             print("  - Deleting entry ({} => {})".format(entry['domain'], entry['answer']))
@@ -61,6 +54,8 @@ def _update_entries(url, cookie, sync_entries):
             response = requests.post('{}/control/rewrite/delete'.format(url), cookies=cookies, data=json.dumps(data))
             if response.status_code == 403:
                 raise UnauthenticatedError
+            elif response.status_code != 200:
+                raise SystemError
 
 def reconcile(adguard_primary, adguard_secondary, primary_cookie, secondary_cookie):
     primary_entries = _get_entries(adguard_primary, primary_cookie)
