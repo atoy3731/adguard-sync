@@ -6,7 +6,6 @@ import entries
 import blocked_services
 import block_allow_lists
 import custom_rules
-import filtering
 from exceptions import UnauthenticatedError, SystemError
 from settings import general, dns, encryption
 import common
