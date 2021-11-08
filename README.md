@@ -40,6 +40,17 @@ You can check on the status of your newly running pod with:
 docker-compose logs
 ```
 
+If you'd prefer to utilize Docker without docker-compose, you can use the following command (substituting your values and adding any necessary environment variables):
+
+```bash
+docker run -d --name adguard-sync --restart=always \
+    -e "ADGUARD_PRIMARY=http://192.168.1.2" \
+    -e "ADGUARD_SECONDARY=http://192.168.1.3" \
+    -e "ADGUARD_USER=admin" \
+    -e "ADGUARD_PASS=password" \
+    atoy3731/adguard-sync:2.1
+```
+
 **NOTE:** The container is set to automatically restart when the docker daemon restarts.
 
 ### Encryption Syncing with Certifications/Keys
