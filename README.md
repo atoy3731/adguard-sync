@@ -45,3 +45,20 @@ docker-compose logs
 ### Encryption Syncing with Certifications/Keys
 
 If you plan to sync encryption settings across environments and you're using paths for certificates/keys, you *must make sure the files exist in both primary and secondary AdGuard instances*! Given this, `SYNC_ENCRYPTION_SETTINGS` is defaulted to `false` as a safety measure.
+
+### Known Issues
+
+#### Permission Error Running on Raspbian
+
+When running on older versions of Raspbian, you may run into permission issues and see errors like the following:
+```
+Fatal Python error: pyinit_main: can't initialize time
+Python runtime state: core initialized
+PermissionError: [Errno 1] Operation not permitted
+```
+
+For this, you'll need to update to a newer version of `libseccomp2`:
+```
+wget http://ftp.us.debian.org/debian/pool/main/libs/libseccomp/libseccomp2_2.5.1-1_armhf.deb
+sudo dpkg -i libseccomp2_2.5.1-1_armhf.deb
+```
