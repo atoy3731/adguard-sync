@@ -50,7 +50,7 @@ If you plan to sync encryption settings across environments and you're using pat
 
 #### Permission Error Running on Raspbian
 
-When running on older versions of Raspbian, you may run into permission issues and see errors like the following:
+When running on older versions of Raspbian, you may run into permission issues and see errors like the following in your logs:
 ```
 Fatal Python error: pyinit_main: can't initialize time
 Python runtime state: core initialized
