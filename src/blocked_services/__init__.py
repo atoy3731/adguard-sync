@@ -29,7 +29,7 @@ def _update_blocked_services(url, cookie, sync_blocked_services):
     }
 
     print("  - Syncing blocked services")
-    response = requests.post('{}/control/blocked_services/set'.format(url), cookies=cookies, data=json.dumps(sync_blocked_services))
+    response = requests.post('{}/control/blocked_services/set'.format(url), cookies=cookies, data=json.dumps(sync_blocked_services), headers=common.REQUEST_HEADERS)
     
     if response.status_code == 403:
         raise UnauthenticatedError

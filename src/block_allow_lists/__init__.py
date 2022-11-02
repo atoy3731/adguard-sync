@@ -1,6 +1,7 @@
 import requests
 import json
 from exceptions import UnauthenticatedError, SystemError
+import common
 
 
 def _get_block_allow_lists(filtering_status):
@@ -60,7 +61,7 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
             'url': del_allowlist['url'],
             'whitelist': True
         }
-        response = requests.post('{}/control/filtering/remove_url'.format(url), cookies=cookies, data=json.dumps(data))
+        response = requests.post('{}/control/filtering/remove_url'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS)
         
         if response.status_code == 403:
             raise UnauthenticatedError
@@ -73,7 +74,7 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
             'url': del_blocklist['url'],
             'whitelist': False
         }
-        response = requests.post('{}/control/filtering/remove_url'.format(url), cookies=cookies, data=json.dumps(data))
+        response = requests.post('{}/control/filtering/remove_url'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS)
         
         if response.status_code == 403:
             raise UnauthenticatedError
@@ -88,7 +89,7 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
             'url': add_allowlist['url'],
             'whitelist': True
         }
-        response = requests.post('{}/control/filtering/add_url'.format(url), cookies=cookies, data=json.dumps(data))
+        response = requests.post('{}/control/filtering/add_url'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS)
         
         if response.status_code == 403:
             raise UnauthenticatedError
@@ -102,7 +103,7 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
             'url': add_blocklist['url'],
             'whitelist': False
         }
-        response = requests.post('{}/control/filtering/add_url'.format(url), cookies=cookies, data=json.dumps(data))
+        response = requests.post('{}/control/filtering/add_url'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS)
         
         if response.status_code == 403:
             raise UnauthenticatedError
@@ -122,7 +123,7 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
         }
 
         print("  - Updating modified entry ({})".format(mod['url']))
-        response = requests.post('{}/control/filtering/set_url'.format(url), cookies=cookies, data=json.dumps(data))
+        response = requests.post('{}/control/filtering/set_url'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS)
         
         if response.status_code == 403:
             raise UnauthenticatedError

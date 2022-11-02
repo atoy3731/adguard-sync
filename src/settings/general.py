@@ -92,7 +92,7 @@ def _update_protection_enabled(enabled, url, cookie):
     else:
         print("  - Disabling global protection")
     
-    response = requests.post('{}/control/dns_config'.format(url), data=json.dumps(data), cookies=cookies)
+    response = requests.post('{}/control/dns_config'.format(url), data=json.dumps(data), headers=common.REQUEST_HEADERS, cookies=cookies)
 
     if response.status_code == 403:
         raise UnauthenticatedError
