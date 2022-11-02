@@ -4,6 +4,8 @@ import json
 import time
 from exceptions import UnauthenticatedError, SystemError
 
+REQUEST_HEADERS = {'Content-Type': 'application/json'}
+
 def get_response(url, cookie):
     """
     Helper function to handle errors and keep it DRY
@@ -37,7 +39,7 @@ def update_settings(setting, primary_settings, secondary_settings, url, cookie):
 
     if primary_settings != secondary_settings:
         print("  - Updating {} settings".format(setting))
-        response = requests.post(url, cookies=cookies, data=json.dumps(primary_settings))
+        response = requests.post(url, cookies=cookies, data=json.dumps(primary_settings), headers=REQUEST_HEADERS)
 
         if response.status_code == 403:
             raise UnauthenticatedError

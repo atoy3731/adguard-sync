@@ -39,7 +39,7 @@ def _update_entries(url, cookie, sync_entries):
                 'domain': entry['domain'],
                 'answer': entry['answer']
             }
-            response = requests.post('{}/control/rewrite/add'.format(url), cookies=cookies, data=json.dumps(data))
+            response = requests.post('{}/control/rewrite/add'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS)
             if response.status_code == 403:
                 raise UnauthenticatedError
             elif response.status_code != 200:
@@ -51,7 +51,7 @@ def _update_entries(url, cookie, sync_entries):
                 'domain': entry['domain'],
                 'answer': entry['answer']
             }
-            response = requests.post('{}/control/rewrite/delete'.format(url), cookies=cookies, data=json.dumps(data))
+            response = requests.post('{}/control/rewrite/delete'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS)
             if response.status_code == 403:
                 raise UnauthenticatedError
             elif response.status_code != 200:

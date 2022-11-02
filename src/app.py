@@ -46,7 +46,7 @@ def get_login_cookie(url, user, passwd):
         'password': passwd
     }
 
-    response = requests.post('{}/control/login'.format(url), data=json.dumps(creds))
+    response = requests.post('{}/control/login'.format(url), data=json.dumps(creds), headers=common.REQUEST_HEADERS)
 
     if response.status_code != 200:
         print('ERROR: Unable to acquire cookie.')
