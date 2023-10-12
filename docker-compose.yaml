@@ -2,7 +2,7 @@ version: "3"
 
 services:
   adguard-sync:
-    image: atoy3731/adguard-sync:1.0
+    image: atoy3731/adguard-sync:latest
     container_name: adguard-sync
 
     restart: always
