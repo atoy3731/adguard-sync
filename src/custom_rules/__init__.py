@@ -2,6 +2,7 @@ import requests
 import os
 import json
 import time
+import common
 from exceptions import UnauthenticatedError, SystemError
 
 
@@ -16,7 +17,10 @@ def _get_custom_rules(filtering_status):
     custom_rules_array = filtering_status['user_rules']
     custom_rules_str = '\n'.join(custom_rules_array)
 
-    return custom_rules_str
+    return {
+        'array': custom_rules_array,
+        'string': custom_rules_str
+    }
 
 
 def _update_custom_rules(url, cookie, custom_rules):
@@ -32,8 +36,12 @@ def _update_custom_rules(url, cookie, custom_rules):
         'agh_session': cookie
     }
 
+    body = {
+        'rules': custom_rules
+    }
+
     print("  - Syncing custom rules")
-    response = requests.post('{}/control/filtering/set_rules'.format(url), cookies=cookies, data=custom_rules)
+    response = requests.post('{}/control/filtering/set_rules'.format(url), headers=common.REQUEST_HEADERS, cookies=cookies, data=json.dumps(body))
     
     if response.status_code == 403:
         raise UnauthenticatedError
@@ -52,5 +60,5 @@ def reconcile(primary_filtering_status, secondary_filtering_status, adguard_seco
     primary_custom_rules = _get_custom_rules(primary_filtering_status)
     secondary_custom_rules = _get_custom_rules(secondary_filtering_status)
 
-    if primary_custom_rules != secondary_custom_rules:
-        _update_custom_rules(adguard_secondary, secondary_cookie, primary_custom_rules)
+    if primary_custom_rules['string'] != secondary_custom_rules['string']:
+        _update_custom_rules(adguard_secondary, secondary_cookie, primary_custom_rules['array'])
