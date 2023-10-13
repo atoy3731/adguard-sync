@@ -16,4 +16,4 @@ services:
       # Optional variables
       # - SECONDARY_ADGUARD_USER=other_admin
       # - SECONDARY_ADGUARD_PASS=other_password
-      # - REFRESH_INTERVAL_SECS=30
+      # - REFRESH_INTERVAL_SECS=10
