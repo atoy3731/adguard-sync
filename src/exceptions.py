@@ -1,5 +1,5 @@
 class UnauthenticatedError(Exception):
     pass
 
-class SystemError(Exception):
+class SyncError(Exception):
     pass

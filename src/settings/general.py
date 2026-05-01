@@ -1,5 +1,5 @@
 import requests
-from exceptions import UnauthenticatedError, SystemError
+from exceptions import UnauthenticatedError, SyncError
 import common
 import json
 
@@ -61,15 +61,16 @@ def _update_enable_setting(setting, enabled, url, cookie):
     }
 
     print("  - Updating {} setting".format(setting))
-    if enabled:
-        response = requests.post('{}/control/{}/enable'.format(url, setting), cookies=cookies)
-    else:
-        response = requests.post('{}/control/{}/disable'.format(url, setting), cookies=cookies)
+    endpoint = '{}/control/{}/{}'.format(url, setting, 'enable' if enabled else 'disable')
+    try:
+        response = requests.post(endpoint, cookies=cookies, timeout=30)
+    except requests.exceptions.RequestException as e:
+        raise SyncError from e
 
     if response.status_code == 403:
         raise UnauthenticatedError
     elif response.status_code != 200:
-        raise SystemError
+        raise SyncError
 
 def _update_protection_enabled(enabled, url, cookie):
     """
@@ -92,12 +93,15 @@ def _update_protection_enabled(enabled, url, cookie):
     else:
         print("  - Disabling global protection")
     
-    response = requests.post('{}/control/dns_config'.format(url), data=json.dumps(data), headers=common.REQUEST_HEADERS, cookies=cookies)
+    try:
+        response = requests.post('{}/control/dns_config'.format(url), data=json.dumps(data), headers=common.REQUEST_HEADERS, cookies=cookies, timeout=30)
+    except requests.exceptions.RequestException as e:
+        raise SyncError from e
 
     if response.status_code == 403:
         raise UnauthenticatedError
     elif response.status_code != 200:
-        raise SystemError
+        raise SyncError
 
 def reconcile(primary_filtering_status, secondary_filtering_status, adguard_primary, primary_cookie, adguard_secondary, secondary_cookie):
     """

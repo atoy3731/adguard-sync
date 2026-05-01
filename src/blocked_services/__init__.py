@@ -1,7 +1,7 @@
 import requests
 import json
 import common
-from exceptions import UnauthenticatedError, SystemError
+from exceptions import UnauthenticatedError, SyncError
 
 
 def _get_blocked_services(url, cookie):
@@ -29,12 +29,15 @@ def _update_blocked_services(url, cookie, sync_blocked_services):
     }
 
     print("  - Syncing blocked services")
-    response = requests.post('{}/control/blocked_services/set'.format(url), cookies=cookies, data=json.dumps(sync_blocked_services), headers=common.REQUEST_HEADERS)
-    
+    try:
+        response = requests.post('{}/control/blocked_services/set'.format(url), cookies=cookies, data=json.dumps(sync_blocked_services), headers=common.REQUEST_HEADERS, timeout=30)
+    except requests.exceptions.RequestException as e:
+        raise SyncError from e
+
     if response.status_code == 403:
         raise UnauthenticatedError
     elif response.status_code != 200:
-        raise SystemError
+        raise SyncError
 
 
 def reconcile(adguard_primary, adguard_secondary, primary_cookie, secondary_cookie):
@@ -48,13 +51,6 @@ def reconcile(adguard_primary, adguard_secondary, primary_cookie, secondary_cook
     primary_blocked_services = _get_blocked_services(adguard_primary, primary_cookie)
     secondary_blocked_services = _get_blocked_services(adguard_secondary, secondary_cookie)
 
-    for bs in primary_blocked_services:
-        if bs not in secondary_blocked_services:
-            _update_blocked_services(adguard_secondary, secondary_cookie, primary_blocked_services)
-            break
-
-    for bs in secondary_blocked_services:
-        if bs not in primary_blocked_services:
-            _update_blocked_services(adguard_secondary, secondary_cookie, primary_blocked_services)
-            break
+    if primary_blocked_services != secondary_blocked_services:
+        _update_blocked_services(adguard_secondary, secondary_cookie, primary_blocked_services)
     

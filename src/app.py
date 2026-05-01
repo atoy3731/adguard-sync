@@ -6,7 +6,7 @@ import entries
 import blocked_services
 import block_allow_lists
 import custom_rules
-from exceptions import UnauthenticatedError, SystemError
+from exceptions import UnauthenticatedError, SyncError
 from settings import general, dns, encryption
 import common
 
@@ -29,7 +29,13 @@ SYNC_GENERAL_SETTINGS = os.environ.get('SYNC_GENERAL_SETTINGS', 'true').lower() 
 SYNC_DNS_SETTINGS = os.environ.get('SYNC_DNS_SETTINGS', 'true').lower() == 'true'
 SYNC_ENCRYPTION_SETTINGS = os.environ.get('SYNC_ENCRYPTION_SETTINGS', 'false').lower() == 'true'
 
-REFRESH_INTERVAL_SECS = int(os.environ.get('REFRESH_INTERVAL_SECS', '60'))
+try:
+    REFRESH_INTERVAL_SECS = int(os.environ.get('REFRESH_INTERVAL_SECS', '60'))
+    if REFRESH_INTERVAL_SECS <= 0:
+        raise ValueError
+except ValueError:
+    print('ERROR: REFRESH_INTERVAL_SECS must be a positive integer. Defaulting to 60.')
+    REFRESH_INTERVAL_SECS = 60
 
 
 def get_login_cookie(url, user, passwd):
@@ -46,18 +52,30 @@ def get_login_cookie(url, user, passwd):
         'password': passwd
     }
 
-    response = requests.post('{}/control/login'.format(url), data=json.dumps(creds), headers=common.REQUEST_HEADERS)
-
-    if response.status_code != 200:
-        print('ERROR: Unable to acquire cookie.')
-        print('Message: {}'.format(response.text))
+    try:
+        response = requests.post('{}/control/login'.format(url), data=json.dumps(creds), headers=common.REQUEST_HEADERS, timeout=30)
+    except requests.exceptions.RequestException as e:
+        print('ERROR: Unable to reach AdGuard at {}. {}'.format(url, e))
         return None
 
-    return response.cookies['agh_session']
+    if response.status_code != 200:
+        print('ERROR: Unable to acquire cookie for {}.'.format(url))
+        return None
+
+    session_cookie = response.cookies.get('agh_session')
+    if session_cookie is None:
+        print('ERROR: AdGuard at {} did not return an agh_session cookie.'.format(url))
+        return None
+
+    return session_cookie
 
 
 if __name__ == '__main__':
     print("Running Adguard Sync for '{}' => '{}'..".format(ADGUARD_PRIMARY, ADGUARD_SECONDARY))
+
+    for label, url in [('primary', ADGUARD_PRIMARY), ('secondary', ADGUARD_SECONDARY)]:
+        if not url.lower().startswith('https://'):
+            print('WARNING: {} URL ({}) is not HTTPS. Credentials will be transmitted in plaintext.'.format(label, url))
 
     # Get initial login cookie
     primary_cookie = get_login_cookie(ADGUARD_PRIMARY, ADGUARD_USER, ADGUARD_PASS)
@@ -107,7 +125,7 @@ if __name__ == '__main__':
             if primary_cookie is None or secondary_cookie is None:
                 exit(1)
 
-        except SystemError:
+        except SyncError:
             print('ERROR: Not able to reach AdGuard. Is it running?')
 
         time.sleep(REFRESH_INTERVAL_SECS)

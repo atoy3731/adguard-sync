@@ -1,6 +1,6 @@
 import requests
 import json
-from exceptions import UnauthenticatedError, SystemError
+from exceptions import UnauthenticatedError, SyncError
 import common
 
 
@@ -61,12 +61,14 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
             'url': del_allowlist['url'],
             'whitelist': True
         }
-        response = requests.post('{}/control/filtering/remove_url'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS)
-        
+        try:
+            response = requests.post('{}/control/filtering/remove_url'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS, timeout=30)
+        except requests.exceptions.RequestException as e:
+            raise SyncError from e
         if response.status_code == 403:
             raise UnauthenticatedError
         elif response.status_code != 200:
-            raise SystemError
+            raise SyncError
 
     for del_blocklist in sync_block_allow_lists['blocklists']['del']:
         print("  - Deleting blocklist entry ({})".format(del_blocklist['url']))
@@ -74,12 +76,14 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
             'url': del_blocklist['url'],
             'whitelist': False
         }
-        response = requests.post('{}/control/filtering/remove_url'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS)
-        
+        try:
+            response = requests.post('{}/control/filtering/remove_url'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS, timeout=30)
+        except requests.exceptions.RequestException as e:
+            raise SyncError from e
         if response.status_code == 403:
             raise UnauthenticatedError
         elif response.status_code != 200:
-            raise SystemError
+            raise SyncError
 
     # Perform adds second
     for add_allowlist in sync_block_allow_lists['allowlists']['add']:
@@ -89,12 +93,14 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
             'url': add_allowlist['url'],
             'whitelist': True
         }
-        response = requests.post('{}/control/filtering/add_url'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS)
-        
+        try:
+            response = requests.post('{}/control/filtering/add_url'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS, timeout=30)
+        except requests.exceptions.RequestException as e:
+            raise SyncError from e
         if response.status_code == 403:
             raise UnauthenticatedError
         elif response.status_code != 200:
-            raise SystemError
+            raise SyncError
 
     for add_blocklist in sync_block_allow_lists['blocklists']['add']:
         print("  - Adding blocklist entry ({})".format(add_blocklist['url']))
@@ -103,13 +109,15 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
             'url': add_blocklist['url'],
             'whitelist': False
         }
-        response = requests.post('{}/control/filtering/add_url'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS)
-        
+        try:
+            response = requests.post('{}/control/filtering/add_url'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS, timeout=30)
+        except requests.exceptions.RequestException as e:
+            raise SyncError from e
         if response.status_code == 403:
             raise UnauthenticatedError
         elif response.status_code != 200:
-            raise SystemError
-    
+            raise SyncError
+
     # Modify any existing out of sync entry
     for mod in sync_block_allow_lists['mods']:
         data = {
@@ -123,12 +131,14 @@ def _update_block_allow_lists(url, cookie, sync_block_allow_lists):
         }
 
         print("  - Updating modified entry ({})".format(mod['url']))
-        response = requests.post('{}/control/filtering/set_url'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS)
-        
+        try:
+            response = requests.post('{}/control/filtering/set_url'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS, timeout=30)
+        except requests.exceptions.RequestException as e:
+            raise SyncError from e
         if response.status_code == 403:
             raise UnauthenticatedError
         elif response.status_code != 200:
-            raise SystemError
+            raise SyncError
 
 
 def reconcile(primary_filtering_status, secondary_filtering_status, adguard_secondary, secondary_cookie):
