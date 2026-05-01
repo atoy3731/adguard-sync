@@ -2,7 +2,7 @@ import requests
 import os
 import json
 import time
-from exceptions import UnauthenticatedError, SystemError
+from exceptions import UnauthenticatedError, SyncError
 
 REQUEST_HEADERS = {'Content-Type': 'application/json'}
 
@@ -14,13 +14,16 @@ def get_response(url, cookie):
         'agh_session': cookie
     }
 
-    response = requests.get(url, cookies=cookies)
+    try:
+        response = requests.get(url, cookies=cookies, timeout=30)
+    except requests.exceptions.RequestException as e:
+        raise SyncError from e
 
     if response.status_code == 403:
         raise UnauthenticatedError
     elif response.status_code != 200:
-        raise SystemError
-    
+        raise SyncError
+
     return json.loads(response.text)
 
 
@@ -39,9 +42,12 @@ def update_settings(setting, primary_settings, secondary_settings, url, cookie):
 
     if primary_settings != secondary_settings:
         print("  - Updating {} settings".format(setting))
-        response = requests.post(url, cookies=cookies, data=json.dumps(primary_settings), headers=REQUEST_HEADERS)
+        try:
+            response = requests.post(url, cookies=cookies, data=json.dumps(primary_settings), headers=REQUEST_HEADERS, timeout=30)
+        except requests.exceptions.RequestException as e:
+            raise SyncError from e
 
         if response.status_code == 403:
             raise UnauthenticatedError
         elif response.status_code != 200:
-            raise SystemError
+            raise SyncError

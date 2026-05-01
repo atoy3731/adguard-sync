@@ -1,9 +1,7 @@
 import requests
-import os
 import json
-import time
 import common
-from exceptions import UnauthenticatedError, SystemError
+from exceptions import UnauthenticatedError, SyncError
 
 
 def _get_custom_rules(filtering_status):
@@ -41,12 +39,15 @@ def _update_custom_rules(url, cookie, custom_rules):
     }
 
     print("  - Syncing custom rules")
-    response = requests.post('{}/control/filtering/set_rules'.format(url), headers=common.REQUEST_HEADERS, cookies=cookies, data=json.dumps(body))
-    
+    try:
+        response = requests.post('{}/control/filtering/set_rules'.format(url), headers=common.REQUEST_HEADERS, cookies=cookies, data=json.dumps(body), timeout=30)
+    except requests.exceptions.RequestException as e:
+        raise SyncError from e
+
     if response.status_code == 403:
         raise UnauthenticatedError
     elif response.status_code != 200:
-        raise SystemError
+        raise SyncError
 
 
 def reconcile(primary_filtering_status, secondary_filtering_status, adguard_secondary, secondary_cookie):

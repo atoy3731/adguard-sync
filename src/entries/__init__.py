@@ -1,7 +1,7 @@
 import requests
 import json
 import common
-from exceptions import UnauthenticatedError, SystemError
+from exceptions import UnauthenticatedError, SyncError
 
 
 def _get_entries(url, cookie):
@@ -39,11 +39,14 @@ def _update_entries(url, cookie, sync_entries):
                 'domain': entry['domain'],
                 'answer': entry['answer']
             }
-            response = requests.post('{}/control/rewrite/add'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS)
+            try:
+                response = requests.post('{}/control/rewrite/add'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS, timeout=30)
+            except requests.exceptions.RequestException as e:
+                raise SyncError from e
             if response.status_code == 403:
                 raise UnauthenticatedError
             elif response.status_code != 200:
-                raise SystemError
+                raise SyncError
 
         elif entry['action'] == 'DEL':
             print("  - Deleting entry ({} => {})".format(entry['domain'], entry['answer']))
@@ -51,11 +54,14 @@ def _update_entries(url, cookie, sync_entries):
                 'domain': entry['domain'],
                 'answer': entry['answer']
             }
-            response = requests.post('{}/control/rewrite/delete'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS)
+            try:
+                response = requests.post('{}/control/rewrite/delete'.format(url), cookies=cookies, data=json.dumps(data), headers=common.REQUEST_HEADERS, timeout=30)
+            except requests.exceptions.RequestException as e:
+                raise SyncError from e
             if response.status_code == 403:
                 raise UnauthenticatedError
             elif response.status_code != 200:
-                raise SystemError
+                raise SyncError
 
 def reconcile(adguard_primary, adguard_secondary, primary_cookie, secondary_cookie):
     primary_entries = _get_entries(adguard_primary, primary_cookie)
